@@ -1,0 +1,161 @@
+name: RefactorIQ Automated Code Smell & Refactoring Assistant
+
+on:
+  push:
+    branches: [ main, master, develop, "feature/**" ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch: # Allows you to manually click "Run workflow" anytime from GitHub UI
+
+jobs:
+  refactoriq-scan:
+    name: RefactorIQ Quality Gate & Decision Planning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run RefactorIQ Autonomous Quality Gate
+        id: refactoriq
+        run: |
+          python - << 'EOF'
+          import os
+          import sys
+          import json
+          import zipfile
+          import io
+          import requests
+
+          CUQA_URL = "https://cuqaagent.gentleglacier-0204e61b.southeastasia.azurecontainerapps.io"
+          RDP_URL = "https://rdpagent.gentleglacier-0204e61b.southeastasia.azurecontainerapps.io"
+          FRONTEND_URL = "https://refactoriqfrontend.gentleglacier-0204e61b.southeastasia.azurecontainerapps.io"
+
+          print("📦 Packaging repository for RefactorIQ analysis...")
+          zip_buffer = io.BytesIO()
+          with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+              for root, dirs, files in os.walk("."):
+                  dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ("venv", "node_modules", "target", "build", "dist")]
+                  for file in files:
+                      if file.startswith(".") or file.endswith(".zip"):
+                          continue
+                      full_path = os.path.join(root, file)
+                      rel_path = os.path.relpath(full_path, ".")
+                      zip_file.write(full_path, rel_path)
+          zip_buffer.seek(0)
+
+          # Step 1: Upload to CUQA Agent
+          print(f"🚀 [1/3] Uploading workspace to CUQA Agent on Azure...")
+          upload_res = requests.post(
+              f"{CUQA_URL}/api/upload-zip",
+              files={"file": ("workspace.zip", zip_buffer, "application/zip")},
+              timeout=60
+          )
+          if upload_res.status_code != 200:
+              print(f"❌ Upload failed with status {upload_res.status_code}: {upload_res.text}")
+              sys.exit(1)
+          upload_data = upload_res.json()
+          print(f"✅ Uploaded successfully: {upload_data.get('files_found', 0)} source files found.")
+
+          # Step 2: Request Quality Report from CUQA
+          print("🔍 [2/3] Generating Quality Report (AST Code Smell Detection)...")
+          report_res = requests.post(f"{CUQA_URL}/api/quality-report", json={}, timeout=60)
+          if report_res.status_code != 200:
+              print(f"❌ Quality report failed: {report_res.status_code}: {report_res.text}")
+              sys.exit(1)
+          raw_report = report_res.json()
+          cuqa_report = raw_report.get("report", raw_report)
+          
+          with open("cuqa_report.json", "w", encoding="utf-8") as f:
+              json.dump(cuqa_report, f, indent=2)
+
+          all_smells = []
+          for f_info in cuqa_report.get("files", []):
+              fname = f_info.get("file", "unknown")
+              for smell in f_info.get("code_smells", []):
+                  all_smells.append({
+                      "file": fname,
+                      "type": smell.get("type", "Unknown"),
+                      "severity": smell.get("severity", "medium").upper(),
+                      "line": smell.get("line", "-"),
+                      "message": smell.get("message", smell.get("details", ""))
+                  })
+
+          print(f"📊 Detected {len(all_smells)} code smells across repository.")
+
+          # Step 3: Send to RDP Agent for Decision Planning
+          print("🧠 [3/3] Requesting RDP Refactoring Plan (MCDA + CodeBERT AI)...")
+          rdp_res = requests.post(
+              f"{RDP_URL}/generate",
+              json=cuqa_report,
+              timeout=60
+          )
+          plan_steps = []
+          if rdp_res.status_code == 200:
+              rdp_data = rdp_res.json()
+              with open("rdp_plan.json", "w", encoding="utf-8") as f:
+                  json.dump(rdp_data, f, indent=2)
+              plan = rdp_data.get("plan", {})
+              plan_steps = plan.get("steps", [])
+              print(f"🎯 Planned {len(plan_steps)} refactoring transformation step(s).")
+          else:
+              print(f"⚠️ RDP planning response status: {rdp_res.status_code}: {rdp_res.text}")
+
+          # Step 4: Write Rich Markdown Summary into GitHub Actions
+          summary_file = os.getenv("GITHUB_STEP_SUMMARY")
+          if summary_file:
+              with open(summary_file, "a", encoding="utf-8") as md:
+                  md.write("# 🛡️ RefactorIQ Autonomous Quality Gate Report\n\n")
+                  md.write(f"> **Scan Status:** Completed | **Files Analyzed:** {upload_data.get('files_found', 0)} | **Primary Language:** {upload_data.get('primary_language', 'Auto')}\n\n")
+                  md.write(f"🔗 **[Open RefactorIQ Interactive Web App]({FRONTEND_URL})**\n\n")
+
+                  md.write("### 🔍 Detected Code Smells (CUQA Agent)\n\n")
+                  if all_smells:
+                      md.write("| Severity | Smell Type | File | Line | Description |\n")
+                      md.write("| :---: | :--- | :--- | :---: | :--- |\n")
+                      for s in all_smells:
+                          sev_badge = "🔴 HIGH" if s['severity'] == "HIGH" else ("🟡 MEDIUM" if s['severity'] == "MEDIUM" else "🟢 LOW")
+                          md.write(f"| {sev_badge} | **{s['type']}** | `{s['file']}` | {s['line']} | {s['message']} |\n")
+                  else:
+                      md.write("✅ **Clean Code!** No code smells detected in this push.\n\n")
+
+                  md.write("\n### 🧠 Planned Refactoring Transformations (RDP Agent)\n\n")
+                  if plan_steps:
+                      md.write("| Step | Refactoring Action | Target Smell | Suitability Score | Target Context |\n")
+                      md.write("| :---: | :--- | :--- | :---: | :--- |\n")
+                      for idx, st in enumerate(plan_steps, start=1):
+                          ref = st.get("refactoring", "Refactor")
+                          smell_type = st.get("smell_type", "Code Smell")
+                          score = st.get("score")
+                          score_str = f"{score:.2f}" if isinstance(score, (int, float)) else "Calculated"
+                          target = st.get("target", {}).get("method") or st.get("target", {}).get("class") or st.get("source_lines") or "-"
+                          md.write(f"| #{idx} | **{ref}** | `{smell_type}` | `{score_str}` | `{target}` |\n")
+                  else:
+                      md.write("ℹ️ No refactoring steps required or scheduled.\n\n")
+
+                  md.write("\n---\n*Report generated autonomously by [RefactorIQ Ecosystem](https://refactoriqfrontend.gentleglacier-0204e61b.southeastasia.azurecontainerapps.io/)*\n")
+
+          print("🏁 RefactorIQ Quality Gate finished successfully!")
+          EOF
+
+      - name: Upload Quality Reports as Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: refactoriq-reports
+          path: |
+            cuqa_report.json
+            rdp_plan.json
+          retention-days: 7
