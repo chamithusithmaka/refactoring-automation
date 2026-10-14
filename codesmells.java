@@ -1,6 +1,52 @@
 import java.util.*;
 
 public class codesmells {
+    private static final int DEFAULT_PORT_2 = 5000;
+
+    private static final int THRESHOLD_LIMIT_200 = 200;
+
+    private static final int THRESHOLD_LIMIT_75 = 75;
+
+    private static final int THRESHOLD_LIMIT_40 = 40;
+
+    private static final int THRESHOLD_LIMIT_20 = 20;
+
+    private static final int THRESHOLD_LIMIT_10 = 10;
+
+    private static final int THRESHOLD_LIMIT_100 = 100;
+
+    private static final int THRESHOLD_LIMIT_5500 = 5500;
+
+    private static final int THRESHOLD_LIMIT_4500 = 4500;
+
+    private static final int THRESHOLD_LIMIT_2500 = 2500;
+
+    private static final int THRESHOLD_LIMIT_1500 = 1500;
+
+    private static final int THRESHOLD_LIMIT_3500 = 3500;
+
+    private static final int THRESHOLD_LIMIT_3000 = 3000;
+
+    private static final int THRESHOLD_LIMIT_2200 = 2200;
+
+    private static final int DEFAULT_PORT = 8000;
+
+    private static final int THRESHOLD_LIMIT_6000 = 6000;
+
+    private static final int THRESHOLD_LIMIT_50 = 50;
+
+    private static final int THRESHOLD_LIMIT_4000 = 4000;
+
+    private static final int THRESHOLD_LIMIT_30 = 30;
+
+    private static final int THRESHOLD_LIMIT_18 = 18;
+
+    private static final int THRESHOLD_LIMIT_1000 = 1000;
+
+    private static final int THRESHOLD_LIMIT_500 = 500;
+
+    private static final int THRESHOLD_LIMIT_2000 = 2000;
+
     static String name = "";
     static int age;
     static boolean flag = false;
@@ -20,30 +66,7 @@ public class codesmells {
         String type = sc.nextLine();
 
         int salary = getSalary(age, type);
-        int bonus = 0;
-
-        if (type.equals("full")) {
-            bonus = 2000;
-        } else if (type.equals("part")) {
-            bonus = 500;
-        } else if (type.equals("contract")) {
-            bonus = 1000;
-        } else {
-            bonus = 0;
-        }
-
-        arr.add(name);
-        arr.add(type);
-
-        int x = 0;
-        if (age > 18) {
-            x = 1;
-        }
-        if (x == 1) {
-            System.out.println("Employee is adult");
-        }
-
-        System.out.println("Employee name: " + name);
+        int bonus = extracted_main(type);
         System.out.println("Employee age: " + age);
         System.out.println("Employee type: " + type);
         System.out.println("Base salary: " + salary);
@@ -58,46 +81,79 @@ public class codesmells {
 
         sc.close();
     }
+    private static int extracted_main(String type) {
+        int bonus = 0;
+
+        if (type.equals("full")) {
+            bonus = THRESHOLD_LIMIT_2000;
+        } else if (type.equals("part")) {
+            bonus = THRESHOLD_LIMIT_500;
+        } else if (type.equals("contract")) {
+            bonus = THRESHOLD_LIMIT_1000;
+        } else {
+            bonus = 0;
+        }
+
+        arr.add(name);
+        arr.add(type);
+
+        int x = 0;
+        if (age > THRESHOLD_LIMIT_18) {
+            x = 1;
+        }
+        if (x == 1) {
+            System.out.println("Employee is adult");
+        }
+
+        System.out.println("Employee name: " + name);
+        return bonus;
+    }
+
 
     static int getSalary(int a, String t) {
+        int salary = extracted_getSalary(a, t);
+
+        return salary;
+    }
+    private static int extracted_getSalary(int a, String t) {
         int salary = 0;
 
         if (t.equals("full")) {
-            if (a < 18) {
-                salary = 2000;
-            } else if (a >= 18 && a < 30) {
-                salary = 4000;
-            } else if (a >= 30 && a < 50) {
-                salary = 6000;
+            if (a < THRESHOLD_LIMIT_18) {
+                salary = THRESHOLD_LIMIT_2000;
+            } else if (a >= THRESHOLD_LIMIT_18 && a < THRESHOLD_LIMIT_30) {
+                salary = THRESHOLD_LIMIT_4000;
+            } else if (a >= THRESHOLD_LIMIT_30 && a < THRESHOLD_LIMIT_50) {
+                salary = THRESHOLD_LIMIT_6000;
             } else {
-                salary = 8000;
+                salary = DEFAULT_PORT;
             }
         } else if (t.equals("part")) {
-            if (a < 18) {
-                salary = 1000;
-            } else if (a >= 18 && a < 30) {
-                salary = 2200;
-            } else if (a >= 30 && a < 50) {
-                salary = 3000;
+            if (a < THRESHOLD_LIMIT_18) {
+                salary = THRESHOLD_LIMIT_1000;
+            } else if (a >= THRESHOLD_LIMIT_18 && a < THRESHOLD_LIMIT_30) {
+                salary = THRESHOLD_LIMIT_2200;
+            } else if (a >= THRESHOLD_LIMIT_30 && a < THRESHOLD_LIMIT_50) {
+                salary = THRESHOLD_LIMIT_3000;
             } else {
-                salary = 3500;
+                salary = THRESHOLD_LIMIT_3500;
             }
         } else if (t.equals("contract")) {
-            if (a < 18) {
-                salary = 1500;
-            } else if (a >= 18 && a < 30) {
-                salary = 2500;
-            } else if (a >= 30 && a < 50) {
-                salary = 4500;
+            if (a < THRESHOLD_LIMIT_18) {
+                salary = THRESHOLD_LIMIT_1500;
+            } else if (a >= THRESHOLD_LIMIT_18 && a < THRESHOLD_LIMIT_30) {
+                salary = THRESHOLD_LIMIT_2500;
+            } else if (a >= THRESHOLD_LIMIT_30 && a < THRESHOLD_LIMIT_50) {
+                salary = THRESHOLD_LIMIT_4500;
             } else {
-                salary = 5500;
+                salary = THRESHOLD_LIMIT_5500;
             }
         } else {
             salary = 0;
         }
-
         return salary;
     }
+
 
     static void processEmployee(String n, int a, String t, int salary, int bonus) {
         if (n != null) {
@@ -128,13 +184,13 @@ public class codesmells {
             System.out.println("No employees found");
         }
 
-        if (age > 18) {
+        if (age > THRESHOLD_LIMIT_18) {
             System.out.println("Adult report printed");
         } else {
             System.out.println("Minor report printed");
         }
 
-        for (int i = 0; i < 100; i += 1) {
+        for (int i = 0; i < THRESHOLD_LIMIT_100; i += 1) {
             if (i % 2 == 0) {
                 System.out.println("Loop step: " + i);
             }
@@ -143,28 +199,31 @@ public class codesmells {
 
     static void doTask(String empName, int ageValue, String typeValue, int salary, int bonus) {
         int result = 0;
+        extracted_doTask(ageValue, bonus, empName, result, salary, typeValue);
+    }
+    private static void extracted_doTask(int ageValue, int bonus, String empName, int result, int salary, String typeValue) {
         if (empName.equals("")) {
             result = 0;
         } else {
             result = 1;
         }
 
-        if (ageValue < 18) {
-            result = result + 10;
-        } else if (ageValue >= 18 && ageValue < 30) {
-            result = result + 20;
-        } else if (ageValue >= 30 && ageValue < 50) {
-            result = result + 30;
+        if (ageValue < THRESHOLD_LIMIT_18) {
+            result = result + THRESHOLD_LIMIT_10;
+        } else if (ageValue >= THRESHOLD_LIMIT_18 && ageValue < THRESHOLD_LIMIT_30) {
+            result = result + THRESHOLD_LIMIT_20;
+        } else if (ageValue >= THRESHOLD_LIMIT_30 && ageValue < THRESHOLD_LIMIT_50) {
+            result = result + THRESHOLD_LIMIT_30;
         } else {
-            result = result + 40;
+            result = result + THRESHOLD_LIMIT_40;
         }
 
         if (typeValue.equals("full")) {
-            result = result + 100;
+            result = result + THRESHOLD_LIMIT_100;
         } else if (typeValue.equals("part")) {
-            result = result + 50;
+            result = result + THRESHOLD_LIMIT_50;
         } else if (typeValue.equals("contract")) {
-            result = result + 75;
+            result = result + THRESHOLD_LIMIT_75;
         } else {
             result = result + 1;
         }
@@ -177,16 +236,16 @@ public class codesmells {
             result = result + bonus;
         }
 
-        if (result > 200) {
+        if (result > THRESHOLD_LIMIT_200) {
             System.out.println("Task successful");
         } else {
             System.out.println("Task not successful");
         }
 
-        if (result > 500) {
-            if (result > 1000) {
-                if (result > 2000) {
-                    if (result > 5000) {
+        if (result > THRESHOLD_LIMIT_500) {
+            if (result > THRESHOLD_LIMIT_1000) {
+                if (result > THRESHOLD_LIMIT_2000) {
+                    if (result > DEFAULT_PORT_2) {
                         System.out.println("Very large result");
                     } else {
                         System.out.println("Large result");
@@ -199,4 +258,5 @@ public class codesmells {
             }
         }
     }
+
 }
