@@ -16,6 +16,8 @@ def main():
     print("Enter employee age:")
     age = int(input())
 
+
+
     print("Enter employee type (full/part/contract):")
     type_value = input()
 
