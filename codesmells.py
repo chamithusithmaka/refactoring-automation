@@ -1,5 +1,8 @@
 import random
 import sys
+THRESHOLD_LIMIT_42 = 42
+THRESHOLD_LIMIT_18 = 18
+THRESHOLD_LIMIT_2000 = 2000
 
 name = ""
 age = 0
@@ -19,25 +22,13 @@ def main():
 
 
     print("Enter employee type (full/part/contract):")
-    type_value = input()
-
-    salary = get_salary(age, type_value)
-    bonus = 0
-
-    if type_value == "full":
-        bonus = 2000
-    elif type_value == "part":
-        bonus = 500
-    elif type_value == "contract":
-        bonus = 1000
-    else:
-        bonus = 0
+    bonus, salary, type_value = extracted_main(age)
 
     arr.append(name)
     arr.append(type_value)
 
     x = 0
-    if age > 18:
+    if age > THRESHOLD_LIMIT_18:
         x = 1
     if x == 1:
         print("Employee is adult")
@@ -55,32 +46,53 @@ def main():
     do_task(name, age, type_value, salary, bonus)
     do_task(name, age, type_value, salary, bonus)
 
+def extracted_main(age):
+    type_value = input()
+
+    salary = get_salary(age, type_value)
+    bonus = 0
+
+    if type_value == "full":
+        bonus = THRESHOLD_LIMIT_2000
+    elif type_value == "part":
+        bonus = 500
+    elif type_value == "contract":
+        bonus = 1000
+    else:
+        bonus = 0
+    return bonus, salary, type_value
+
 
 def get_salary(a, t):
+    salary = extracted_get_salary(a, t)
+
+    return salary
+
+def extracted_get_salary(a, t):
     salary = 0
 
     if t == "full":
-        if a < 18:
-            salary = 2000
-        elif a >= 18 and a < 30:
+        if a < THRESHOLD_LIMIT_18:
+            salary = THRESHOLD_LIMIT_2000
+        elif a >= THRESHOLD_LIMIT_18 and a < 30:
             salary = 4000
         elif a >= 30 and a < 50:
             salary = 6000
         else:
             salary = 8000
     elif t == "part":
-        if a < 18:
+        if a < THRESHOLD_LIMIT_18:
             salary = 1000
-        elif a >= 18 and a < 30:
+        elif a >= THRESHOLD_LIMIT_18 and a < 30:
             salary = 2200
         elif a >= 30 and a < 50:
             salary = 3000
         else:
             salary = 3500
     elif t == "contract":
-        if a < 18:
+        if a < THRESHOLD_LIMIT_18:
             salary = 1500
-        elif a >= 18 and a < 30:
+        elif a >= THRESHOLD_LIMIT_18 and a < 30:
             salary = 2500
         elif a >= 30 and a < 50:
             salary = 4500
@@ -88,7 +100,6 @@ def get_salary(a, t):
             salary = 5500
     else:
         salary = 0
-
     return salary
 
 
@@ -119,7 +130,7 @@ def print_report():
     else:
         print("No employees found")
 
-    if age > 18:
+    if age > THRESHOLD_LIMIT_18:
         print("Adult report printed")
     else:
         print("Minor report printed")
@@ -132,14 +143,37 @@ def print_report():
 def do_task(emp_name, age_value, type_value, salary, bonus):
     result = 0
 
+    result = extracted_do_task(age_value, emp_name, result, salary, type_value)
+
+    if bonus > 0:
+        result = result + bonus
+
+    if result > 200:
+        print("Task successful")
+    else:
+        print("Task not successful")
+
+    if result > 500:
+        if result > 1000:
+            if result > THRESHOLD_LIMIT_2000:
+                if result > 5000:
+                    print("Very large result")
+                else:
+                    print("Large result")
+            else:
+                print("Medium result")
+        else:
+            print("Small result")
+
+def extracted_do_task(age_value, emp_name, result, salary, type_value):
     if emp_name == "":
         result = 0
     else:
         result = 1
 
-    if age_value < 18:
+    if age_value < THRESHOLD_LIMIT_18:
         result = result + 10
-    elif age_value >= 18 and age_value < 30:
+    elif age_value >= THRESHOLD_LIMIT_18 and age_value < 30:
         result = result + 20
     elif age_value >= 30 and age_value < 50:
         result = result + 30
@@ -157,28 +191,9 @@ def do_task(emp_name, age_value, type_value, salary, bonus):
 
     if salary > 0:
         result = result + salary
-
-    if bonus > 0:
-        result = result + bonus
-
-    if result > 200:
-        print("Task successful")
-    else:
-        print("Task not successful")
-
-    if result > 500:
-        if result > 1000:
-            if result > 2000:
-                if result > 5000:
-                    print("Very large result")
-                else:
-                    print("Large result")
-            else:
-                print("Medium result")
-        else:
-            print("Small result")
+    return result
 
 
 if __name__ == "__main__":
-    random.seed(42)
+    random.seed(THRESHOLD_LIMIT_42)
     main()
