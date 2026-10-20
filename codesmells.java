@@ -116,6 +116,10 @@ public class codesmells {
         return salary;
     }
     private static int extracted_getSalary(int a, String t) {
+        int salary = extracted_extracted_getSalary(a, t);
+        return salary;
+    }
+    private static int extracted_extracted_getSalary(int a, String t) {
         int salary = 0;
 
         if (t.equals("full")) {
@@ -153,6 +157,7 @@ public class codesmells {
         }
         return salary;
     }
+
 
 
     static void processEmployee(String n, int a, String t, int salary, int bonus) {
@@ -208,6 +213,9 @@ public class codesmells {
             result = 1;
         }
 
+        extracted_extracted_doTask(ageValue, bonus, result, salary, typeValue);
+    }
+    private static void extracted_extracted_doTask(int ageValue, int bonus, int result, int salary, String typeValue) {
         if (ageValue < THRESHOLD_LIMIT_18) {
             result = result + THRESHOLD_LIMIT_10;
         } else if (ageValue >= THRESHOLD_LIMIT_18 && ageValue < THRESHOLD_LIMIT_30) {
@@ -258,5 +266,6 @@ public class codesmells {
             }
         }
     }
+
 
 }
